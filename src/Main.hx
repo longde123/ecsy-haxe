@@ -33,12 +33,12 @@ class HelloSystem extends System {
         trace("hello_execute");
         for(r in queries_hello.added){
             trace("hello_added");
-            var h:Hello=cast r.getComponent(Hello);
+            var h= r.getComponent(Hello);
             trace(h.hi);
         }
         for(r in queries_hello.changed){
             trace("hello_changed");
-            var h:Hello=cast r.getComponent(Hello);
+            var h= r.getComponent(Hello);
             trace(h.hi);
         }
         for(r in queries_hello.removed){
@@ -76,7 +76,7 @@ class Main {
         trace("Hello, world 1");
         run();
         trace("Hello, world 2");
-        var h:Hello=cast entity.getMutableComponent(Hello);
+        var h= entity.getMutableComponent(Hello);
         h.hi="hahaha";
         run();
 

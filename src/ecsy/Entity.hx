@@ -43,14 +43,14 @@ class Entity {
 
     // COMPONENTS
 
-    public function getComponent(componentClass:ComponentConstructor, includeRemoved = false) {
+    public function getComponent<C:Component>(componentClass:Class<C>, includeRemoved = false):C {
         var component = Lambda.find(this._components, function(c) return Std.is(c, componentClass));
 
         if (component == null && includeRemoved == true) {
-            component = getRemovedComponent(componentClass) ;
+            component = getRemovedComponent(cast componentClass) ;
         }
 
-        return DEBUG ? Util.wrapImmutableComponent(componentClass, component) : component;
+        return cast  DEBUG ? Util.wrapImmutableComponent(cast componentClass, component) : component;
     }
 
     public function getRemovedComponent(componentClass:ComponentConstructor) {
@@ -69,13 +69,13 @@ class Entity {
         return this._componentTypes;
     }
 
-    public function getMutableComponent(component:ComponentConstructor) {
+    public function getMutableComponent<C:Component>(component:Class<C>):C {
         var comp = getComponent(component);
         for (i in 0...this.queries.length) {
             var query:Query = this.queries[i];
             // @todo accelerate this check. Maybe having query._Components as an object
             // @todo add Not components
-            if (query.reactive && Lambda.has(query.components,   component )) {
+            if (query.reactive && Lambda.has(query.components, cast  component )) {
                 query.eventDispatcher.dispatchEvent(
                     Query.COMPONENT_CHANGED,
                     this,
@@ -83,7 +83,7 @@ class Entity {
                 );
             }
         }
-        return comp;
+        return cast comp;
     }
 
     public function addComponent(component:ComponentConstructor) {
