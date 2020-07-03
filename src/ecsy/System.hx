@@ -16,7 +16,7 @@ class System {
 
     public function canExecute() {
         for (matcher in this.querieConfigs) {
-            if (matcher.mandatory && matcher.query.entities.length == 0) {
+            if (matcher.mandatory && matcher.results.length == 0) {
                 return false;
             }
         }
@@ -62,7 +62,7 @@ class System {
             throw ("'components' attribute can't be empty in a query");
         }
         var query:Query = this.world.entityManager.queryComponents(queryConfig);
-        queryConfig.query = query ;
+
         this._queries.push(query) ;
 
 

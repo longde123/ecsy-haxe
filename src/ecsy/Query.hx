@@ -6,26 +6,22 @@ import Lambda;
 class Matcher {
     public var allOfComponents:Array<ComponentConstructor>;
     public var noneOfComponents:Array<ComponentConstructor>;
-    public var results(get, null):Array<Entity>;
+    public var results:Array<Entity>;
     public var added:Array<Entity>;
     public var removed:Array<Entity>;
     public var changed:Array<Entity>;
     public var listen_added:Bool;
     public var listen_removed:Bool;
     public var listen_changed:Bool;
-    public var query:Query;
     public var mandatory:Bool;
-
-    function get_results() {
-        return query.entities;
-    }
-
+    public var key:String;
     public function new():Void {
 
         mandatory = false;
         added = [];
         removed = [];
         changed = [];
+        results= [];
         allOfComponents = [];
         noneOfComponents = [];
 
@@ -52,28 +48,34 @@ class Query {
     /**
      * @param {Array(Component)} Components List of types of components to query
      */
-    public var components:Array<ComponentConstructor>;
-    public var notComponents:Array<ComponentConstructor>;
+    public var components(get,null):Array<ComponentConstructor>;
+    public var notComponents(get,null):Array<ComponentConstructor>;
     public var reactive:Bool;
-    public var entities:Array<Entity>;
-    public var eventDispatcher:EventDispatcher;
-    public var key:String;
+    public var entities(get,null):Array<Entity>;
 
+    public var eventDispatcher:EventDispatcher;
+    public var queryConfig:Matcher;
+
+    function get_components(){
+        return queryConfig.allOfComponents;
+    }
+    function get_notComponents(){
+        return queryConfig.noneOfComponents;
+    }
+    function get_entities(){
+        return queryConfig.results;
+    }
     public function new(queryConfig:Matcher, manager:EntityManager) {
-        this.components = queryConfig.allOfComponents;
-        this.notComponents = queryConfig.noneOfComponents;
+        this.queryConfig=queryConfig;
         if (this.components.length == 0) {
             throw ("Can't create a query without components");
         }
 
-        this.entities = [];
 
         this.eventDispatcher = new EventDispatcher();
 
         // This query is being used by a reactive system
         this.reactive = false;
-
-        this.key = Util.queryKey(queryConfig.allOfComponents, queryConfig.noneOfComponents);
 
         // Fill the query with the existing entities
         for (i in 0... manager._entities.length) {
