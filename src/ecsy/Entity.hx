@@ -75,7 +75,7 @@ class Entity {
             var query:Query = this.queries[i];
             // @todo accelerate this check. Maybe having query._Components as an object
             // @todo add Not components
-            if (query.reactive && Lambda.exists(query.components, function(c) return Std.is(c, component))) {
+            if (query.reactive && Lambda.has(query.components,   component )) {
                 query.eventDispatcher.dispatchEvent(
                     Query.COMPONENT_CHANGED,
                     this,

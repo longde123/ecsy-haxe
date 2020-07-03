@@ -5,6 +5,11 @@ import ecsy.World;
 import ecsy.System;
 import ecsy.Component;
 class Hello extends Component {
+    public var hi:String;
+
+    override public function reset(){
+        hi="hello world ecsy ";
+    }
 
 }
 typedef HelloQueries = {hello:Matcher};
@@ -28,7 +33,13 @@ class HelloSystem extends System {
         trace("hello_execute");
         for(r in queries_hello.added){
             trace("hello_added");
-            trace(r.getComponent(Hello));
+            var h:Hello=cast r.getComponent(Hello);
+            trace(h.hi);
+        }
+        for(r in queries_hello.changed){
+            trace("hello_changed");
+            var h:Hello=cast r.getComponent(Hello);
+            trace(h.hi);
         }
         for(r in queries_hello.removed){
             trace("hello_removed");
@@ -65,6 +76,8 @@ class Main {
         trace("Hello, world 1");
         run();
         trace("Hello, world 2");
+        var h:Hello=cast entity.getMutableComponent(Hello);
+        h.hi="hahaha";
         run();
 
         trace("Hello, world 3");

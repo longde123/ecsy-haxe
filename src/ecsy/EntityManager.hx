@@ -130,6 +130,7 @@ class EntityManager {
         );
 
         var comp:Component = componentPool.acquire();
+        comp.reset();
 
         entity._components.push(comp) ;
 
@@ -265,7 +266,6 @@ class EntityManager {
                 var componentPool:ObjectPool<Component> = this.world.componentsManager.getComponentsPool(
                     component
                 );
-                comp.reset();
                 componentPool.release(comp);
                 this.world.componentsManager.componentRemovedFromEntity(component);
             }
