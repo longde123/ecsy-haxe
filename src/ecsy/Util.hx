@@ -1,6 +1,5 @@
 package ecsy;
 import ecsy.Component.ComponentConstructor;
-import haxe.ds.Either;
 class Util {
     public static function wrapImmutableComponent(T, component) {
         return component;
@@ -11,7 +10,7 @@ class Util {
 * @private
 */
     public static function getName(component:ComponentConstructor) {
-        return component + "";
+        return Type.getClassName(component) ;
     }
 
 /**

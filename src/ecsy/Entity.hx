@@ -86,8 +86,8 @@ class Entity {
         return comp;
     }
 
-    public function addComponent(component:ComponentConstructor, values = null) {
-        this._entityManager.entityAddComponent(this, component, values);
+    public function addComponent(component:ComponentConstructor) {
+        this._entityManager.entityAddComponent(this, component);
         return this;
     }
 
@@ -127,18 +127,6 @@ class Entity {
         return this._entityManager.entityRemoveAllComponents(this, forceImmediate);
     }
 
-    public function copy(src:Entity) {
-        for (srcComponent in src._components) {
-            this.addComponent(Type.getClass(srcComponent));
-            var component:Component = cast this.getComponent(Type.getClass(srcComponent));
-            component.copy(srcComponent);
-        }
-        return this;
-    }
-
-    public function clone() {
-        return new Entity(this._entityManager).copy(this);
-    }
 
     public function reset() {
         this.id = this._entityManager._nextEntityId++;

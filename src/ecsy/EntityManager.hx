@@ -1,11 +1,10 @@
 package ecsy;
 import Array;
-import haxe.ds.Either;
-import Lambda;
 import ecsy.Component.ComponentConstructor;
 import ecsy.Component.SystemStateComponent;
-import haxe.macro.Expr.Error;
+import ecsy.Query.Matcher;
 import haxe.ds.StringMap;
+import Lambda;
 @:generic
 class EntityPool<E> extends ObjectPool<E> {
     var entityManager:EntityManager;
@@ -105,7 +104,7 @@ class EntityManager {
      * @param {Component} Component Component to be added to the entity
      * @param {Object} values Optional values to replace the default attributes
      */
-    public function entityAddComponent(entity:Entity, component:ComponentConstructor, values) {
+    public function entityAddComponent(entity:Entity, component:ComponentConstructor) {
         if (!Lambda.has(this.world.componentsManager.components, component)) {
             throw ("Attempted to add unregistered component  " );
         }
@@ -130,13 +129,7 @@ class EntityManager {
             component
         );
 
-        var comp:Component = componentPool != null
-        ? componentPool.acquire()
-        : Type.createInstance(component, values);
-
-        if (componentPool != null && values != null) {
-            comp.copy(values);
-        }
+        var comp:Component = componentPool.acquire();
 
         entity._components.push(comp) ;
 
@@ -215,7 +208,6 @@ class EntityManager {
      * @param {Bool} immediately If you want to remove the component immediately instead of deferred (Default is false)
      */
     public function removeEntity(entity:Entity, immediately = false) {
-
         if (!Lambda.has(this._entities, entity)) throw ("Tried to remove entity not in list");
         var index = this._entities.indexOf(entity);
         entity.alive = false;
@@ -275,7 +267,7 @@ class EntityManager {
                 );
                 comp.reset();
                 componentPool.release(comp);
-                this.world.componentsManager.componentRemovedFromEntity(Component);
+                this.world.componentsManager.componentRemovedFromEntity(component);
             }
         }
 
@@ -286,8 +278,8 @@ class EntityManager {
      * Get a query based on a list of components
      * @param {Array(Component)} Components List of components that will form the query
      */
-    public function queryComponents(allOfComponents:Array<ComponentConstructor>, noneOfComponents:Array<ComponentConstructor>) {
-        return this._queryManager.getQuery(allOfComponents, noneOfComponents);
+    public function queryComponents(queryConfig:Matcher) {
+        return this._queryManager.getQuery(queryConfig);
     }
 
     // EXTRAS

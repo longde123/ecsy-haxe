@@ -3,7 +3,48 @@ package ecsy;
 import ecsy.Component.ComponentConstructor;
 import ecsy.Util;
 import Lambda;
+class Matcher {
+    public var allOfComponents:Array<ComponentConstructor>;
+    public var noneOfComponents:Array<ComponentConstructor>;
+    public var results(get, null):Array<Entity>;
+    public var added:Array<Entity>;
+    public var removed:Array<Entity>;
+    public var changed:Array<Entity>;
+    public var listen_added:Bool;
+    public var listen_removed:Bool;
+    public var listen_changed:Bool;
+    public var query:Query;
+    public var mandatory:Bool;
 
+    function get_results() {
+        return query.entities;
+    }
+
+    public function new():Void {
+
+        mandatory = false;
+        added = [];
+        removed = [];
+        changed = [];
+        allOfComponents = [];
+        noneOfComponents = [];
+
+        listen_added = true;
+        listen_removed = true;
+        listen_changed = true;
+    }
+
+    public function allOf(allOfComponents:Array<ComponentConstructor>):Matcher {
+        this.allOfComponents = allOfComponents;
+        return this;
+    }
+
+    public function noneOf(noneOfComponents:Array<ComponentConstructor>):Matcher {
+        this.noneOfComponents = noneOfComponents;
+        return this;
+    }
+
+}
 class Query {
     public static var ENTITY_ADDED = "Query#ENTITY_ADDED";
     public static var ENTITY_REMOVED = "Query#ENTITY_REMOVED";
@@ -18,9 +59,9 @@ class Query {
     public var eventDispatcher:EventDispatcher;
     public var key:String;
 
-    public function new(allOfComponents:Array<ComponentConstructor>, noneOfComponents:Array<ComponentConstructor>, manager:EntityManager) {
-        this.components = allOfComponents;
-        this.notComponents = noneOfComponents;
+    public function new(queryConfig:Matcher, manager:EntityManager) {
+        this.components = queryConfig.allOfComponents;
+        this.notComponents = queryConfig.noneOfComponents;
         if (this.components.length == 0) {
             throw ("Can't create a query without components");
         }
@@ -32,7 +73,7 @@ class Query {
         // This query is being used by a reactive system
         this.reactive = false;
 
-        this.key = Util.queryKey(allOfComponents, noneOfComponents);
+        this.key = Util.queryKey(queryConfig.allOfComponents, queryConfig.noneOfComponents);
 
         // Fill the query with the existing entities
         for (i in 0... manager._entities.length) {
@@ -61,6 +102,7 @@ class Query {
      * @param {Entity} entity
      */
     public function removeEntity(entity:Entity) {
+
         var index = Lambda.has(this.entities, entity);
         if (index) {
             this.entities.remove(entity);

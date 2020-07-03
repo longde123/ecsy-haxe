@@ -1,50 +1,10 @@
 package ecsy;
 
-import ecsy.Component.ComponentConstructor;
-import haxe.ds.Either;
-import haxe.macro.Expr.Error;
+import ecsy.Query.Matcher;
 
-
-class Matcher {
-    public var allOfComponents:Array<ComponentConstructor>;
-    public var noneOfComponents:Array<ComponentConstructor>;
-    public var mandatory:Bool;
-    public var results:Array<Entity>;
-    public var added:Array<Entity>;
-    public var removed:Array<Entity>;
-    public var changed:Array<Entity>;
-    public var listen_added:Bool;
-    public var listen_removed:Bool;
-    public var listen_changed:Bool;
-
-    public function new():Void {
-        mandatory = true;
-        results = [];
-        added = [];
-        removed = [];
-        changed = [];
-        allOfComponents = [];
-        noneOfComponents = [];
-
-        listen_added = true;
-        listen_removed = true;
-        listen_changed = true;
-    }
-
-    public function allOf(allOfComponents:Array<ComponentConstructor>):Matcher {
-        this.allOfComponents = allOfComponents;
-        return this;
-    }
-
-    public function noneOf(noneOfComponents:Array<ComponentConstructor>):Matcher {
-        this.noneOfComponents = noneOfComponents;
-        return this;
-    }
-
-}
 
 class System {
-    public var _mandatoryQueries:Array<Query>;
+
     public var world:World;
     public var enabled:Bool;
     public var _queries:Array<Query>;
@@ -55,10 +15,8 @@ class System {
     var querieConfigs:Array<Matcher>;
 
     public function canExecute() {
-        if (this._mandatoryQueries.length == 0) return true;
-        for (i in 0... this._mandatoryQueries.length) {
-            var query = this._mandatoryQueries[i];
-            if (query.entities.length == 0) {
+        for (matcher in this.querieConfigs) {
+            if (matcher.mandatory && matcher.query.entities.length == 0) {
                 return false;
             }
         }
@@ -84,52 +42,62 @@ class System {
         if (attributes != null) {
             this.priority = attributes.priority;
         }
-        this._mandatoryQueries = [];
+
 
         this.initialized = true;
     }
 
-    public function initQueries(configQ:Dynamic) {
-        this.querieConfigs = [];
-        for (f in Reflect.fields(configQ)) {
-            this.querieConfigs.push(cast Reflect.field(configQ, f));
-        }
+    public function initQueries(configQ:Array<Matcher>) {
+        this.querieConfigs = configQ;
+
         for (query in this.querieConfigs) {
             configQueries(query);
         }
     }
 
-    function addQueryListener(query:Query, eventName, eventList:Array<Entity>) {
-        query.eventDispatcher.addEventListener(
-            eventName,
-            function(entity, comp) {
-                // @fixme overhead?
-                if (eventList.indexOf(entity) == -1)
-                    eventList.push(entity);
-            }
-        );
-    }
 
     function configQueries(queryConfig:Matcher) {
         var Components = queryConfig.allOfComponents;
         if (Components.length == 0) {
             throw ("'components' attribute can't be empty in a query");
         }
-        var query:Query = this.world.entityManager.queryComponents(queryConfig.allOfComponents, queryConfig.noneOfComponents);
+        var query:Query = this.world.entityManager.queryComponents(queryConfig);
+        queryConfig.query = query ;
         this._queries.push(query) ;
-        if (queryConfig.mandatory == true) {
-            this._mandatoryQueries.push(query);
-        }
-        queryConfig.results = query.entities ;
+
+
         if (queryConfig.listen_added) {
-            addQueryListener(query, Query.ENTITY_ADDED, queryConfig.added);
+            query.eventDispatcher.addEventListener(
+                Query.ENTITY_ADDED,
+                function(entity, comp) {
+                    // @fixme overhead?
+                    if (queryConfig.added.indexOf(entity) == -1)
+                        queryConfig.added.push(entity);
+                }
+            );
         }
         if (queryConfig.listen_removed) {
-            addQueryListener(query, Query.ENTITY_REMOVED, queryConfig.removed);
+            query.eventDispatcher.addEventListener(
+                Query.ENTITY_REMOVED,
+                function(entity, comp) {
+                    // @fixme overhead?
+                    if (queryConfig.removed.indexOf(entity) == -1)
+                        queryConfig.removed.push(entity);
+                }
+            );
+
         }
         if (queryConfig.listen_changed) {
             query.reactive = true;
-            addQueryListener(query, Query.COMPONENT_CHANGED, queryConfig.changed);
+            query.eventDispatcher.addEventListener(
+                Query.COMPONENT_CHANGED,
+                function(entity, comp) {
+                    // @fixme overhead?
+                    if (queryConfig.changed.indexOf(entity) == -1)
+                        queryConfig.changed.push(entity);
+                }
+            );
+
         }
     }
 

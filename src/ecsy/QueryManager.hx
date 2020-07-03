@@ -1,9 +1,9 @@
 package ecsy;
 
-import haxe.ds.Either;
 import ecsy.Component.ComponentConstructor;
-import Lambda;
+import ecsy.Query.Matcher;
 import haxe.ds.StringMap;
+import Lambda;
 class QueryManager {
     public var _world:World;
     public var _queries:StringMap<Query>;
@@ -88,11 +88,11 @@ class QueryManager {
      * Get a query for the specified components
      * @param {Component} Components Components that the query should have
      */
-    public function getQuery(allOfComponents:Array<ComponentConstructor>, noneOfComponents:Array<ComponentConstructor>) {
-        var key:String = Util.queryKey(allOfComponents, noneOfComponents);
+    public function getQuery(queryConfig:Matcher) {
+        var key:String = Util.queryKey(queryConfig.allOfComponents, queryConfig.noneOfComponents);
         var query:Query = cast this._queries.get(key);
         if (!this._queries.exists(key)) {
-            query = new Query( allOfComponents, noneOfComponents, this._world.entityManager);
+            query = new Query( queryConfig, this._world.entityManager);
             this._queries.set(key, query);
         }
         return query;

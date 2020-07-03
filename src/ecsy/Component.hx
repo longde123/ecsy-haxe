@@ -1,16 +1,13 @@
 package ecsy;
+
+
 typedef ComponentConstructor = Class<Component>;
+
 class Component {
 
 
-    public function new() {}
-
-    public function copy(source:Dynamic) {
-        return this;
-    }
-
-    public function clone() {
-        return this;
+    public function new() {
+        reset();
     }
 
     public function reset() {}

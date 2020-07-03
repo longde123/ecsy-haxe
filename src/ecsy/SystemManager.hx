@@ -72,6 +72,7 @@ class SystemManager {
     }
 
     public function executeSystem(system:System, delta, time) {
+
         if (system.initialized) {
             if (system.canExecute()) {
                 var startTime = Date.now().getTime();
@@ -91,7 +92,9 @@ class SystemManager {
     }
 
     public function execute(delta:Float, time:Float, forcePlay = false) {
+
         for (system in this._executeSystems) {
+
             if (forcePlay || system.enabled) {
                 this.executeSystem(system, delta, time);
             }

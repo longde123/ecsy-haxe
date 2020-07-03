@@ -1,8 +1,7 @@
 package ecsy;
 
-import haxe.ds.StringMap;
 import ecsy.Component.ComponentConstructor;
-import haxe.ds.ObjectMap;
+import haxe.ds.StringMap;
 
 class ComponentManager {
     var _componentPool:StringMap< ObjectPool<Component>>;

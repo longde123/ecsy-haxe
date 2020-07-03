@@ -1,9 +1,7 @@
 # ecsy-haxe 
 
 
- 
-It is not recommended that the production environment  ecsy-haxe still updated
-
+alpha 0.3
 
 # ecsy
 

@@ -57,12 +57,12 @@ class World {
     }
 
     public function execute(delta:Float, time:Float) {
+
         if (delta == 0) {
             time = Date.now().getTime();
             delta = time - this.lastTime;
             this.lastTime = time;
         }
-
         if (this.enabled) {
             this.systemManager.execute(delta, time);
             this.entityManager.processDeferredRemoval();
