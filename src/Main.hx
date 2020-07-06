@@ -70,8 +70,10 @@ class Main {
         world.registerComponent(Hello);
         world.registerSystem(HelloSystem);
 
+        
+        run();
+        
         var entity= world.createEntity().addComponent(Hello);
-
 
         trace("Hello, world 1");
         run();

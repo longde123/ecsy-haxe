@@ -1,5 +1,6 @@
 package ecsy;
 
+import Type;
 import ecsy.Component.ComponentConstructor;
 import haxe.ds.StringMap;
 
@@ -24,7 +25,7 @@ class ComponentManager {
         this.components.push(component);
 
         this.numComponents.set(componentName, 0);
-        var objectPool = new ObjectPool(component);
+        var objectPool = new ObjectPool(function() return Type.createEmptyInstance(component));
 
         this._componentPool.set(componentName, objectPool);
     }
@@ -35,10 +36,12 @@ class ComponentManager {
         }
         var componentName = Util.componentPropertyName(component);
         this.numComponents.set(componentName, this.numComponents.get(componentName) + 1);
+
     }
 
     public function componentRemovedFromEntity(component:ComponentConstructor) {
         var componentName = Util.componentPropertyName(component);
+
         this.numComponents.set(componentName, this.numComponents.get(componentName) - 1);
     }
 

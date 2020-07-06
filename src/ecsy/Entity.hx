@@ -4,16 +4,13 @@ import Lambda;
 typedef EntityConstructor = Class<Entity>;
 class Entity {
     public static var DEBUG = false;
-    public var name:String;
     public var _entityManager:EntityManager;
     public var id:Int;
     public var _componentTypes:Array< ComponentConstructor>;
     public var numStateComponents:Int;
     public var alive:Bool;
     public var _components:Array<Component>;
-    public var _componentsToRemove:Array<Component>;
     public var queries:Array<Query>;
-    public var _componentTypesToRemove:Array<ComponentConstructor>;
 
     public function new(entityManager:EntityManager) {
         this._entityManager = entityManager ;
@@ -27,13 +24,10 @@ class Entity {
         // Instance of the components
         this._components = [];
 
-        this._componentsToRemove = [];
 
         // Queries where the entity is added
         this.queries = [];
 
-        // Used for deferred removal
-        this._componentTypesToRemove = [];
 
         this.alive = false;
 
@@ -43,27 +37,20 @@ class Entity {
 
     // COMPONENTS
 
-    public function getComponent<C:Component>(componentClass:Class<C>, includeRemoved = false):C {
+    public function getComponent<C:Component>(componentClass:Class<C> ):C {
         var component = Lambda.find(this._components, function(c) return Std.is(c, componentClass));
 
-        if (component == null && includeRemoved == true) {
-            component = getRemovedComponent(cast componentClass) ;
-        }
+
 
         return cast  DEBUG ? Util.wrapImmutableComponent(cast componentClass, component) : component;
     }
 
-    public function getRemovedComponent(componentClass:ComponentConstructor) {
-        return Lambda.find(this._componentsToRemove, function(c) return Std.is(c, componentClass));
-    }
 
     public function getComponents() {
         return this._components;
     }
 
-    public function getComponentsToRemove() {
-        return this._componentsToRemove;
-    }
+
 
     public function getComponentTypes() {
         return this._componentTypes;
@@ -91,21 +78,18 @@ class Entity {
         return this;
     }
 
-    public function removeComponent(component:ComponentConstructor, forceImmediate = false) {
-        this._entityManager.entityRemoveComponent(this, component, forceImmediate);
+    public function removeComponent(component:ComponentConstructor) {
+        this._entityManager.entityRemoveComponent(this, component);
         return this;
     }
 
     public function hasComponent(component:ComponentConstructor, includeRemoved = false) {
         var had = Lambda.has(this._componentTypes, component);
-        var hasRemoved = (includeRemoved == true && this.hasRemovedComponent(component));
 
-        return had || hasRemoved;
+        return had  ;
     }
 
-    public function hasRemovedComponent(component:ComponentConstructor) {
-        return Lambda.has(this._componentTypesToRemove, component) ;
-    }
+
 
     public function hasAllComponents(components:Array<ComponentConstructor>) {
         for (component in components) {
@@ -123,8 +107,8 @@ class Entity {
         return false;
     }
 
-    public function removeAllComponents(forceImmediate) {
-        return this._entityManager.entityRemoveAllComponents(this, forceImmediate);
+    public function removeAllComponents() {
+        return this._entityManager.entityRemoveAllComponents(this);
     }
 
 
@@ -137,7 +121,7 @@ class Entity {
         }
     }
 
-    public function remove(forceImmediate = false) {
-        return this._entityManager.removeEntity(this, forceImmediate);
+    public function remove() {
+        return this._entityManager.removeEntity(this);
     }
 }

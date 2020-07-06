@@ -5,27 +5,7 @@ import ecsy.Component.SystemStateComponent;
 import ecsy.Query.Matcher;
 import haxe.ds.StringMap;
 import Lambda;
-@:generic
-class EntityPool<E> extends ObjectPool<E> {
-    var entityManager:EntityManager;
 
-    public function new(entityManager, entityClass:Class<E>, initialSize = 0) {
-        super(entityClass, 0);
-        this.entityManager = entityManager;
-
-        if (initialSize != 0) {
-            this.expand(initialSize);
-        }
-    }
-
-    override public function expand(count) {
-        for (n in 0...count) {
-            var clone:E = cast Type.createInstance(T, [ this.entityManager]) ;
-            this.freeList.push(clone);
-        }
-        this.count += count;
-    }
-}
 
 /**
    * @private
@@ -40,11 +20,7 @@ class EntityManager {
     public var componentsManager:ComponentManager;
     public var _entities:Array<Entity>;
     public var _nextEntityId:Int;
-    public var _entitiesByNames:StringMap<Entity>;
-    public var entitiesWithComponentsToRemove:Array<Dynamic>;
-    public var entitiesToRemove:Array<Dynamic>;
-    public var deferredRemovalEnabled:Bool;
-    public var _entityPool:EntityPool<Entity> ;
+    public var _entityPool:ObjectPool<Entity> ;
     public var eventDispatcher:EventDispatcher;
     public var _queryManager:QueryManager;
 
@@ -56,41 +32,22 @@ class EntityManager {
         this._entities = [];
         this._nextEntityId = 0;
 
-        this._entitiesByNames = new StringMap<Entity>();
 
         this._queryManager = new QueryManager(this.world);
         this.eventDispatcher = new EventDispatcher();
-        this._entityPool = new EntityPool<Entity> (
-        this,
-        this.world.options.entityClass,
-        this.world.options.entityPoolSize
-        );
+        this._entityPool = new ObjectPool<Entity> ( function() return  new Entity(this), this.world.options.entityPoolSize);
 
-        // Deferred deletion
-        this.entitiesWithComponentsToRemove = [];
-        this.entitiesToRemove = [];
-        this.deferredRemovalEnabled = true;
+
     }
 
-    public function getEntityByName(name) {
-        return this._entitiesByNames.get(name);
-    }
+
 
     /**
      * Create a new entity
      */
-    public function createEntity(name) {
+    public function createEntity( ) {
         var entity:Entity = cast this._entityPool.acquire();
         entity.alive = true;
-        entity.name = name ;
-        if (name != null) {
-            if (this._entitiesByNames.exists(name)) {
-                trace("Entity name '${name}' already exist");
-            } else {
-                this._entitiesByNames.set(name, entity);
-            }
-        }
-
         this._entities.push(entity);
         this.eventDispatcher.dispatchEvent(ENTITY_CREATED, entity);
         return entity;
@@ -146,22 +103,14 @@ class EntityManager {
      * @param {*} Component Component to remove from the entity
      * @param {Bool} immediately If you want to remove the component immediately instead of deferred (Default is false)
      */
-    public function entityRemoveComponent(entity:Entity, component:ComponentConstructor, immediately) {
+    public function entityRemoveComponent(entity:Entity, component:ComponentConstructor ) {
         var index = Lambda.has(entity._componentTypes, component);
         if (!index) return;
         var comp:Component = Lambda.find(entity._components, function(c) return Std.is(c, component));
         this.eventDispatcher.dispatchEvent(COMPONENT_REMOVE, entity, comp);
 
-        if (immediately) {
             this._entityRemoveComponentSync(entity, component, index);
-        } else {
-            if (entity._componentTypesToRemove.length == 0)
-                this.entitiesWithComponentsToRemove.push(entity);
-            entity._componentTypes.remove(component);
-            entity._componentTypesToRemove.push(component);
-            entity._components.remove(comp);
-            entity._componentsToRemove.push(comp);
-        }
+
 
         // Check each indexed query to see if we need to remove it
         this._queryManager.onEntityComponentRemoved(entity, component);
@@ -186,19 +135,19 @@ class EntityManager {
         entity._components.remove(comp);
         comp.reset();
         componentPool.release(comp);
-        this.world.componentsManager.componentRemovedFromEntity(Component);
+        this.world.componentsManager.componentRemovedFromEntity(component);
     }
 
     /**
      * Remove all the components from an entity
      * @param {Entity} entity Entity from which the components will be removed
      */
-    public function entityRemoveAllComponents(entity:Entity, immediately) {
+    public function entityRemoveAllComponents(entity:Entity) {
         var Components = entity._componentTypes;
         var j = Components.length - 1;
         while (j >= 0) {
             if (!Std.is(Components[j], SystemStateComponent))
-                this.entityRemoveComponent(entity, Components[j], immediately);
+                this.entityRemoveComponent(entity, Components[j]);
             j--;
         }
     }
@@ -208,7 +157,7 @@ class EntityManager {
      * @param {Entity} entity Entity to remove from the manager
      * @param {Bool} immediately If you want to remove the component immediately instead of deferred (Default is false)
      */
-    public function removeEntity(entity:Entity, immediately = false) {
+    public function removeEntity(entity:Entity) {
         if (!Lambda.has(this._entities, entity)) throw ("Tried to remove entity not in list");
         var index = this._entities.indexOf(entity);
         entity.alive = false;
@@ -216,20 +165,15 @@ class EntityManager {
             // Remove from entity list
             this.eventDispatcher.dispatchEvent(ENTITY_REMOVED, entity);
             this._queryManager.onEntityRemoved(entity);
-            if (immediately == true) {
+
                 this._releaseEntity(entity, index);
-            } else {
-                this.entitiesToRemove.push(entity);
-            }
+
         }
-        this.entityRemoveAllComponents(entity, immediately);
+        this.entityRemoveAllComponents(entity);
     }
 
     public function _releaseEntity(entity:Entity, index:Int) {
         this._entities.remove(entity);
-        if (this._entitiesByNames.exists(entity.name)) {
-            this._entitiesByNames.remove(entity.name);
-        }
         this._entityPool.release(entity);
     }
 
@@ -244,35 +188,6 @@ class EntityManager {
         }
     }
 
-    public function processDeferredRemoval() {
-        if (!this.deferredRemovalEnabled) {
-            return;
-        }
-        for (i in 0... this.entitiesToRemove.length) {
-            var entity = this.entitiesToRemove[i];
-            var index = this._entities.indexOf(entity);
-            this._releaseEntity(entity, index);
-        }
-        this.entitiesToRemove = [];
-
-        for (i in 0... this.entitiesWithComponentsToRemove.length) {
-            var entity:Entity = this.entitiesWithComponentsToRemove[i];
-            while (entity._componentTypesToRemove.length > 0) {
-                var component = entity._componentTypesToRemove.pop();
-
-                var comp:Component = Lambda.find(entity._componentsToRemove, function(c) return Std.is(c, component));
-                entity._componentsToRemove.remove(comp);
-
-                var componentPool:ObjectPool<Component> = this.world.componentsManager.getComponentsPool(
-                    component
-                );
-                componentPool.release(comp);
-                this.world.componentsManager.componentRemovedFromEntity(component);
-            }
-        }
-
-        this.entitiesWithComponentsToRemove = [];
-    }
 
     /**
      * Get a query based on a list of components

@@ -1,16 +1,16 @@
 package ecsy;
-
+//@generic
 class ObjectPool<TClass> {
     // @todo Add initial size
-    var T:Class<TClass>;
+    var funcT:Void->TClass;
     var isObjectPool:Bool;
     var count:Int;
     var freeList:Array<TClass>;
 
-    public function new(T:Class<TClass>, initialSize = 0) {
+    public function new(T:Void->TClass, initialSize = 0) {
         this.freeList = [];
         this.count = 0;
-        this.T = T;
+        this.funcT = T;
         this.isObjectPool = true;
 
         if (initialSize != 0) {
@@ -35,7 +35,7 @@ class ObjectPool<TClass> {
 
     public function expand(count) {
         for (n in 0...count) {
-            var clone:TClass = cast Type.createEmptyInstance(T) ;
+            var clone:TClass = funcT() ;
             this.freeList.push(clone);
         }
         this.count += count;

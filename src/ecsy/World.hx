@@ -1,14 +1,12 @@
 package ecsy;
 
 typedef WorldOptions = {
-    entityPoolSize:Int,
-    entityClass:Class<Entity>
+    entityPoolSize:Int
 };
 class World {
 
     public static var DEFAULT_OPTIONS:WorldOptions = {
-        entityPoolSize: 0,
-        entityClass: Entity
+        entityPoolSize: 0
     };
     public var options:WorldOptions;
     public var componentsManager:ComponentManager;
@@ -65,7 +63,6 @@ class World {
         }
         if (this.enabled) {
             this.systemManager.execute(delta, time);
-            this.entityManager.processDeferredRemoval();
         }
     }
 
@@ -77,8 +74,8 @@ class World {
         this.enabled = true;
     }
 
-    public function createEntity(name = null) {
-        return this.entityManager.createEntity(name);
+    public function createEntity() {
+        return this.entityManager.createEntity();
     }
 
     public function stats() {
