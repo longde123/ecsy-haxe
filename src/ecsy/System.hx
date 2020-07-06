@@ -27,11 +27,8 @@ class System {
 
     }
 
-    public function init(attributes):Void {
 
-    }
-
-    public function new(world, attributes:{priority:Int}) {
+    public function new(world,  priority:Int=0) {
         this.world = world;
         this.enabled = true;
         // @todo Better naming :)
@@ -39,9 +36,7 @@ class System {
         this.priority = 0;
         // Used for stats
         this.executeTime = 0;
-        if (attributes != null) {
-            this.priority = attributes.priority;
-        }
+        this.priority =  priority;
 
 
         this.initialized = true;
@@ -129,49 +124,6 @@ class System {
         }
     }
 
-//  public function  toJSON() {
-//      var json = {
-//        name: this.constructor.name,
-//        enabled: this.enabled,
-//        executeTime: this.executeTime,
-//        priority: this.priority,
-//        queries: {}
-//      };
-//
-//      if (this.constructor.queries) {
-//        var queries = this.constructor.queries;
-//        for (let queryName in queries) {
-//          let query = this.queries[queryName];
-//          let queryDefinition = queries[queryName];
-//          let jsonQuery = (json.queries[queryName] = {
-//            key: this._queries[queryName].key
-//          });
-//
-//          jsonQuery.mandatory = queryDefinition.mandatory === true;
-//          jsonQuery.reactive =
-//            queryDefinition.listen &&
-//            (queryDefinition.listen.added === true ||
-//              queryDefinition.listen.removed === true ||
-//              queryDefinition.listen.changed === true ||
-//              Array.isArray(queryDefinition.listen.changed));
-//
-//          if (jsonQuery.reactive) {
-//            jsonQuery.listen = {};
-//
-//            const methods = ["added", "removed", "changed"];
-//            methods.forEach(method => {
-//              if (query[method]) {
-//                jsonQuery.listen[method] = {
-//                  entities: query[method].length
-//                };
-//              }
-//            });
-//          }
-//        }
-//      }
-//
-//      return json;
-//    }
 }
   
 

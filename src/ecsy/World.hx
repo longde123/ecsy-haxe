@@ -36,8 +36,8 @@ class World {
         return this;
     }
 
-    public function registerSystem(System, attributes = null) {
-        this.systemManager.registerSystem(System, attributes);
+    public function registerSystem(System ) {
+        this.systemManager.registerSystem(System);
         return this;
     }
 

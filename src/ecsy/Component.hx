@@ -16,6 +16,7 @@ class Component {
 }
 class SystemStateComponent extends Component {}
 class TagComponent extends Component {}
+class RemoveEntityTagComponent extends Component {}
 
 
   

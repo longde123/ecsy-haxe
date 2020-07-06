@@ -14,15 +14,14 @@ class SystemManager {
         this.lastExecutedSystem = null;
     }
 
-    public function registerSystem(SystemClass:Class<System>, attributes) {
+    public function registerSystem(SystemClass:Class<System>) {
         var systemClass = this.getSystem(SystemClass);
         if (systemClass != null) {
             trace("System ${SystemClass} already registered.");
             return this;
         }
 
-        var system:System = cast Type.createInstance(SystemClass, [this.world, attributes]);
-        system.init(attributes);
+        var system:System = cast Type.createInstance(SystemClass, [this.world]);
         system.order = this._systems.length;
         this._systems.push(system);
         this._executeSystems.push(system);
@@ -99,25 +98,5 @@ class SystemManager {
                 this.executeSystem(system, delta, time);
             }
         }
-    }
-
-    public function stats() {
-        var stats = {
-            numSystems: this._systems.length,
-            systems: {}
-        };
-//
-//        for (i in 0... this._systems.length) {
-//            var system:System = this._systems[i];
-//            var systemStats = (stats.systems[system.constructor.name] = {
-//                queries: {},
-//                executeTime: system.executeTime
-//            });
-//            for (name in system.ctx) {
-//                systemStats.queries[name] = system.ctx[name].stats();
-//            }
-//        }
-
-        return stats;
     }
 }

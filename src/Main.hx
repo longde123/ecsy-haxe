@@ -18,8 +18,8 @@ class HelloSystem extends System {
     var queries:HelloQueries;
     var queries_hello:Matcher;
     // This method will get called on every frame by default
-    public function new(world, attributes) {
-        super(world, attributes);
+    public function new(world) {
+        super(world);
         queries_hello=new Matcher().allOf([Hello]);
         // Define a query of entities that have "Velocity" and "Position" components
         queries = {

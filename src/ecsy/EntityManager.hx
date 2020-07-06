@@ -206,30 +206,6 @@ class EntityManager {
         return this._entities.length;
     }
 
-    /**
-     * Return some stats
-     */
-    public function stats() {
-//      var stats = {
-//        numEntities: this._entities.length,
-//        numQueries: Object.keys(this._queryManager._queries).length,
-//        queries: this._queryManager.stats(),
-//        numComponentPool: Object.keys(this.componentsManager._componentPool)
-//          .length,
-//        componentPool: {},
-//        eventDispatcher: this.eventDispatcher.stats
-//      };
-//
-//      for (var cname in this.componentsManager._componentPool) {
-//        var pool = this.componentsManager._componentPool[cname];
-//        stats.componentPool[cname] = {
-//          used: pool.totalUsed(),
-//          size: pool.count
-//        };
-//      }
-//
-//      return stats;
-    }
 }
   
 

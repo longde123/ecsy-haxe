@@ -122,28 +122,6 @@ class Query {
             !entity.hasAnyComponents(this.notComponents)
         );
     }
-//
-//    public function  toJSON() {
-//      return {
-//        key: this.key,
-//        reactive: this.reactive,
-//        components: {
-//          included:  Lambda.map(this.Components,function(C:Component ) return C.name),
-//          not: this.NotComponents.map(C => C.name)
-//        },
-//        numEntities: this.entities.length
-//      };
-//    }
-
-    /**
-     * Return stats for this query
-     */
-    public function stats() {
-        return {
-            numComponents: this.components.length,
-            numEntities: this.entities.length
-        };
-    }
 }
   
 

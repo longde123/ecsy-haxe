@@ -6,17 +6,17 @@ import haxe.ds.StringMap;
 import Lambda;
 class QueryManager {
     public var _world:World;
-    public var _queries:StringMap<Query>;
+    public var _matcher_queries:StringMap<Query>;
 
     public function new(world:World) {
         this._world = world;
 
         // Queries indexed by a unique identifier for the components it has
-        this._queries = new StringMap<Query>();
+        this._matcher_queries = new StringMap<Query>();
     }
 
     public function onEntityRemoved(entity:Entity) {
-        for (query in this._queries.iterator()) {
+        for (query in this._matcher_queries.iterator()) {
             if (Lambda.has(entity.queries, query)) {
                 query.removeEntity(entity);
             }
@@ -32,7 +32,7 @@ class QueryManager {
         // @todo Use bitmask for checking components?
 
         // Check each indexed query to see if we need to add this entity to the list
-        for (query in this._queries.iterator()) {
+        for (query in this._matcher_queries.iterator()) {
 
             if (Lambda.has(query.notComponents, component)
             && Lambda.has(query.entities, entity)) {
@@ -61,7 +61,7 @@ class QueryManager {
      * @param {Component} Component Component to remove from the entity
      */
     public function onEntityComponentRemoved(entity:Entity, component:ComponentConstructor) {
-        for (query in this._queries.iterator()) {
+        for (query in this._matcher_queries.iterator()) {
 
 
             if (
@@ -90,23 +90,13 @@ class QueryManager {
      */
     public function getQuery(queryConfig:Matcher) {
         var key:String = Util.queryKey(queryConfig.allOfComponents, queryConfig.noneOfComponents);
-        var query:Query = cast this._queries.get(key);
-        if (!this._queries.exists(key)) {
+        var query:Query = cast this._matcher_queries.get(key);
+        if (!this._matcher_queries.exists(key)) {
             query = new Query( queryConfig, this._world.entityManager);
-            this._queries.set(key, query);
+            this._matcher_queries.set(key, query);
         }
         return query;
     }
 
-    /**
-     * Return some stats from this class
-     */
-    public function stats() {
-//        var stats = {};
-//        for (queryName in this._queries.keys()) {
-//            stats[queryName] = this._queries.get(queryName).stats();
-//        }
-//        return stats;
-    }
 }
   
