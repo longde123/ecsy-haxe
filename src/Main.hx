@@ -4,6 +4,9 @@ import haxe.ds.Either;
 import ecsy.World;
 import ecsy.System;
 import ecsy.Component;
+
+
+
 class Hello extends Component {
     public var hi:String;
 

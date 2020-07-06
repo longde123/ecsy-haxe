@@ -70,6 +70,8 @@ class Entity {
                 );
             }
         }
+
+        this._entityManager.entityMutableComponent(this, comp);
         return cast comp;
     }
 

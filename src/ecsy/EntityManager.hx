@@ -16,6 +16,7 @@ class EntityManager {
     static var ENTITY_REMOVED = "EntityManager#ENTITY_REMOVED";
     static var COMPONENT_ADDED = "EntityManager#COMPONENT_ADDED";
     static var COMPONENT_REMOVE = "EntityManager#COMPONENT_REMOVE";
+    static var COMPONENT_MUTABLE = "EntityManager#COMPONENT_MUTABLE";
     public var world:World;
     public var componentsManager:ComponentManager;
     public var _entities:Array<Entity>;
@@ -54,7 +55,9 @@ class EntityManager {
     }
 
     // COMPONENTS
-
+    public function entityMutableComponent(entity:Entity, comp:Component) {
+        this.eventDispatcher.dispatchEvent(COMPONENT_MUTABLE, entity, comp);
+    }
     /**
      * Add a component to an entity
      * @param {Entity} entity Entity where the component will be added
